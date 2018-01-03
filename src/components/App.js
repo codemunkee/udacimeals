@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import capitalize from 'capitalize'
 import { addRecipe, removeFromCalendar } from '../actions'
+import { capitalize } from '../utils/helpers'
 import CalendarIcon from 'react-icons/lib/fa/calendar-plus-o'
 import Modal from 'react-modal'
 import ArrowRightIcon from 'react-icons/lib/fa/arrow-circle-right'
@@ -15,9 +15,7 @@ class App extends Component {
     meal: null,
     day: null,
     food: null,
-    loadingFood: false,
   }
-
   openFoodModal = ({ meal, day }) => {
     this.setState(() => ({
       foodModalOpen: true,
@@ -25,7 +23,6 @@ class App extends Component {
       day,
     }))
   }
-
   closeFoodModal = () => {
     this.setState(() => ({
       foodModalOpen: false,
@@ -34,32 +31,32 @@ class App extends Component {
       food: null,
     }))
   }
-
-  searchFood = e => {
+  searchFood = (e) => {
     if (!this.input.value) {
       return
     }
 
     e.preventDefault()
 
-    this.setState(() => ({ loadingFood: true}))
+    this.setState(() => ({ loadingFood: true }))
 
     fetchRecipes(this.input.value)
-      .then(food => this.setState(() => ({
+      .then((food) => this.setState(() => ({
         food,
         loadingFood: false,
       })))
   }
-
   render() {
     const { foodModalOpen, loadingFood, food } = this.state
-    const { calendar, remove, selectRecipe } = this.props
+    const { calendar, selectRecipe, remove } = this.props
     const mealOrder = ['breakfast', 'lunch', 'dinner']
+
 
     return (
       <div className='container'>
+
         <ul className='meal-types'>
-          {mealOrder.map(mealType => (
+          {mealOrder.map((mealType) => (
             <li key={mealType} className='subheader'>
               {capitalize(mealType)}
             </li>
@@ -102,7 +99,7 @@ class App extends Component {
               ? <Loading delay={200} type='spin' color='#222' className='loading' />
               : <div className='search-container'>
                   <h3 className='subheader'>
-                    Find a meal for {this.state.day} {this.state.meal}.
+                    Find a meal for {capitalize(this.state.day)} {this.state.meal}.
                   </h3>
                   <div className='search'>
                     <input
@@ -129,35 +126,36 @@ class App extends Component {
           </div>
         </Modal>
 
-
       </div>
     )
   }
 }
 
-function mapStateToProps({ calendar, food }) {
+function mapStateToProps ({ food, calendar }) {
   const dayOrder = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
 
   return {
-    calendar: dayOrder.map(day => ({
+    calendar: dayOrder.map((day) => ({
       day,
       meals: Object.keys(calendar[day]).reduce((meals, meal) => {
         meals[meal] = calendar[day][meal]
-        ? food[calendar[day][meal]]
-        : null
+          ? food[calendar[day][meal]]
+          : null
 
         return meals
       }, {})
-    }))
+    })),
   }
 }
 
-function mapDispatchToProps(dispatch) {
+function mapDispatchToProps (dispatch) {
   return {
     selectRecipe: (data) => dispatch(addRecipe(data)),
     remove: (data) => dispatch(removeFromCalendar(data))
   }
-
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(App)
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(App)
